@@ -24,7 +24,8 @@ start_link() ->
     supervisor:start_link({local, ?SERVER}, ?MODULE, []).
 
 start_service(ServiceName)	->
-		Spec = service_spec(ServiceName),
+		{ok, App} = application:get_application(?MODULE),
+		Spec = service_spec(App, ServiceName),
 		supervisor:start_child(?MODULE, Spec).
 
 stop_service(ServiceName)	->
@@ -43,11 +44,12 @@ init([]) ->
     {ok, {{one_for_one, 100, 100}, service_specs()}}.
 
 service_specs()	->
-		{ok, ServiceNames} = application:get_env(redis_pool, services),
-		[service_spec(ServiceName) || ServiceName <- ServiceNames].
+		{ok, App} = application:get_application(?MODULE),
+		{ok, ServiceNames} = application:get_env(App, services),
+		[service_spec(App, ServiceName) || ServiceName <- ServiceNames].
 
-service_spec(ServiceName)	->
-		{ok, Opts} = application:get_env(redis_pool, ServiceName),
+service_spec(App, ServiceName)	->
+		{ok, Opts} = application:get_env(App, ServiceName),
 		Host = proplists:get_value(host, Opts, "127.0.0.1"),
 		Port = proplists:get_value(port, Opts, 6379),
 		DB = proplists:get_value(db, Opts, 0),
