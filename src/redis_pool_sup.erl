@@ -44,7 +44,7 @@ init([]) ->
     {ok, {{one_for_one, 100, 100}, service_specs()}}.
 
 service_specs()	->
-		{ok, App} = application:get_application(?MODULE),
+		App = redis_pool,
 		{ok, ServiceNames} = application:get_env(App, redis_services),
 		[service_spec(App, ServiceName) || ServiceName <- ServiceNames].
 
